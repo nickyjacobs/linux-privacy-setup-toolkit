@@ -1,0 +1,19 @@
+# Backups made by the toolkit (do not commit user backups)
+.privacy-toolkit-backups/
+
+# Test run output (dry-run)
+.test-output/
+
+# Logs
+*.log
+/tmp/
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Optional: local overrides (if you add config later)
+# .env
+# local.conf
