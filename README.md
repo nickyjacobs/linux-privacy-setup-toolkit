@@ -1,172 +1,150 @@
-Linux Privacy Setup Toolkit - Complete Guide
-Table of Contents
-Overview
-What This Tool Does
-Prerequisites
-Installation
-Usage
-Detailed Feature Breakdown
-Post-Setup Commands
-Security Considerations
-Troubleshooting
-Advanced Customization
-Frequently Asked Questions
-Overview
-The Linux Privacy Setup Toolkit is a comprehensive bash script designed to transform your
-Linux system into a privacy-focused, security-hardened machine. Unlike basic privacy
-guides that suggest installing a VPN and calling it a day, this toolkit implements multiple
-layers of protection at the system level.
-Why This Tool Exists
-Most privacy tutorials are scattered across outdated blog posts, broken GitHub repositories,
-and forum threads from years ago. This toolkit consolidates the best privacy practices into a
-single, automated setup process that:
-Actually works - Tested on major Linux distributions
-Explains what it's doing - No black box operations
-Asks for permission - You control what gets installed
-Provides ongoing tools - Not just a one-time setup
-Philosophy
-Privacy isn't about becoming invisible - it's about making surveillance expensive and difficult.
-This toolkit raises the cost of tracking you by implementing multiple layers of protection that
-work together to scatter your digital footprint instead of serving it up on a silver platter.
-What This Tool Does🔥 UFW Firewall Configuration
-Problem Solved: Your system accepts incoming connections by default, creating attack
-vectors.
-What It Does:
-Resets UFW to clean state
-Sets default policy to deny all incoming connections
-Allows only essential outgoing connections (DNS, HTTP, HTTPS, NTP, SSH)
-Enables comprehensive logging
-Creates a restrictive security perimeter around your system
-🌐 DNS Encryption Setup
-Problem Solved: DNS requests leak your browsing history to your ISP in plain text.
-What It Does:
-Configures systemd-resolved for DNS over HTTPS (DoH) and DNS over TLS (DoT)
-Uses Cloudflare (1.1.1.1) and Google (8.8.8.8) as encrypted DNS providers
-Enables DNSSEC for cryptographic validation of DNS responses
-Prevents DNS hijacking and manipulation
-Hides your browsing patterns from network-level surveillance
-🌍 Browser Privacy Hardening
-Problem Solved: Default browser settings leak massive amounts of data through tracking,
-fingerprinting, and telemetry.
-What It Does:
-Installs Firefox (if not present)
-Creates comprehensive privacy configuration ( user.js file)
-Enables tracking protection, disables social media tracking and fingerprinting
-Blocks WebGL, WebRTC, and Web Audio API (common fingerprinting vectors)
-Disables telemetry, health reports, and data submission to Mozilla
-Configures strict cookie policies and referrer headers
-Prevents DNS prefetching and connection prediction
-🗂️ Metadata Removal Tools
-Problem Solved: Files contain hidden metadata that can reveal sensitive information about
-you, your devices, and your activities.
-What It Does:Installs mat2 and exiftool for comprehensive metadata removal
-Creates a convenient strip-metadata command for easy use
-Removes EXIF data from images, document properties, GPS coordinates, camera
-information, and timestamps
-Provides both GUI-friendly (mat2) and command-line (exiftool) options
-🏖️ Application Sandboxing
-Problem Solved: Malicious or compromised applications can access your entire file system
-and personal data.
-What It Does:
-Installs and configures Firejail for application sandboxing
-Creates isolated environments for applications with restricted file system access
-Automatically sandboxes common applications using firecfg
-Prevents applications from accessing private directories, devices, and system files
-Implements security profiles that drop capabilities and restrict network protocols
-🔒 System Hardening
-Problem Solved: Default Linux configurations prioritize usability over security, leaving
-unnecessary attack surfaces.
-What It Does:
-Disables unnecessary services (Bluetooth, CUPS printing, Avahi/Zeroconf)
-Configures kernel parameters to prevent common attack vectors
-Enables Address Space Layout Randomization (ASLR) at maximum level
-Restricts access to kernel pointers and system logs
-Hardens network stack against IP spoofing, redirect attacks, and broadcast pings
-Enables TCP SYN cookies to prevent SYN flood attacks
-Protects against hardlink and symlink attacks
-📊 Privacy Auditing
-Problem Solved: Privacy is an ongoing process, but most people set it up once and never
-check again.
-What It Does:
-Creates a privacy-audit command for regular system checks
-Monitors firewall status, DNS configuration, and running services
-Checks browser privacy configurations
-Verifies sandboxing and metadata tools are workingProvides regular health checks for your privacy setup
-Prerequisites
-System Requirements
-Linux distribution (Ubuntu, Debian, Fedora, or Arch-based)
-Non-root user account with sudo privileges
-Internet connection for downloading packages
-At least 100MB free disk space
-Supported Distributions
-Ubuntu 18.04+ and derivatives (Pop!_OS, Linux Mint, etc.)
-Debian 10+ and derivatives
-Fedora 30+ and derivatives (CentOS Stream, Rocky Linux, etc.)
-Arch Linux and derivatives (Manjaro, EndeavourOS, etc.)
-What You Should Know Before Running
-This script makes system-level changes
-Some configurations may break certain applications or workflows
-You'll be prompted before each major change
-A backup of important configurations is recommended
-Some changes require a system reboot to take full effect
-Installation
-Step 1: Download the Script
-# Create the file manually
-nano privacy-toolkit.sh
-Step 2: Make Executable
-chmod +x privacy-toolkit.sh
-Step 3: Verify Script Integrity (Recommended)
-# Check the script content before running
-less privacy-toolkit.sh
-# Look for suspicious commands or unexpected network calls (script uses only package managers, no raw curl/wget to URLs)
-grep -n "curl\|wget\|nc\|telnet" privacy-toolkit.sh || true
-# Script makes backups of resolved.conf and user.js to ~/.privacy-toolkit-backups/ before overwriting
-Usage
-Basic Usage
-./privacy-toolkit.sh
-The script runs interactively, presenting you with options and asking for confirmation before
-making changes.
+# Linux Privacy Setup Toolkit – Complete Guide
 
-Testing (recommended before real run)
-# Dry-run: no system or config changes; shows what would be done and writes generated scripts to a temp dir
-./privacy-toolkit.sh --dry-run
-# Or use the test script (syntax check, full dry-run, generated scripts check)
-./run-tests.sh
-# Optional: use a specific output dir for dry-run (e.g. for CI)
-DRY_RUN_OUTPUT_DIR=/path/to/output ./privacy-toolkit.sh --dry-run
-What to Expect During Setup
-1. Welcome Screen: Overview of what the toolkit will do
-2. System Detection: Automatic detection of your Linux distribution
-3. Dependency Check: Verification and installation of required tools
-4. Interactive Configuration: Step-by-step setup with user confirmation
-5. Summary Report: Overview of changes made and next steps
-Sample Session Flow
+## Table of Contents
+
+- [Overview](#overview)
+- [What This Tool Does](#what-this-tool-does)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Detailed Feature Breakdown](#detailed-feature-breakdown)
+- [Post-Setup Commands](#post-setup-commands)
+- [Security Considerations](#security-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Advanced Customization](#advanced-customization)
+- [Frequently Asked Questions](#frequently-asked-questions)
+
+## Overview
+
+The Linux Privacy Setup Toolkit is a comprehensive bash script designed to transform your Linux system into a privacy-focused, security-hardened machine. Unlike basic privacy guides that suggest installing a VPN and calling it a day, this toolkit implements multiple layers of protection at the system level.
+
+### Why This Tool Exists
+
+Most privacy tutorials are scattered across outdated blog posts, broken GitHub repositories, and forum threads from years ago. This toolkit consolidates the best privacy practices into a single, automated setup process that:
+
+- **Actually works** – Tested on major Linux distributions
+- **Explains what it's doing** – No black box operations
+- **Asks for permission** – You control what gets installed
+- **Provides ongoing tools** – Not just a one-time setup
+
+### Philosophy
+
+Privacy isn't about becoming invisible – it's about making surveillance expensive and difficult. This toolkit raises the cost of tracking you by implementing multiple layers of protection that work together to scatter your digital footprint instead of serving it up on a silver platter.
+
+## What This Tool Does
+
+### 🔥 UFW Firewall Configuration
+
+**Problem Solved:** Your system accepts incoming connections by default, creating attack vectors.
+
+**What It Does:**
+
+- Resets UFW to clean state
+- Sets default policy to deny all incoming connections
+- Allows only essential outgoing connections (DNS, HTTP, HTTPS, NTP, SSH)
+- Enables comprehensive logging
+- Creates a restrictive security perimeter around your system
+
+### 🌐 DNS Encryption Setup
+
+**Problem Solved:** DNS requests leak your browsing history to your ISP in plain text.
+
+**What It Does:**
+
+- Configures systemd-resolved for DNS over HTTPS (DoH) and DNS over TLS (DoT)
+- Uses Cloudflare (1.1.1.1) and Google (8.8.8.8) as encrypted DNS providers
+- Enables DNSSEC for cryptographic validation of DNS responses
+- Prevents DNS hijacking and manipulation
+- Hides your browsing patterns from network-level surveillance
+
+### 🌍 Browser Privacy Hardening
+
+**Problem Solved:** Default browser settings leak data through tracking, fingerprinting, and telemetry.
+
+**What It Does:** Installs Firefox (if not present), creates privacy configuration (user.js), enables tracking protection, blocks WebGL/WebRTC/Web Audio fingerprinting, disables telemetry, strict cookies and referrer policy, no DNS prefetch.
+
+### 🗂️ Metadata Removal Tools
+
+**Problem Solved:** Files contain hidden metadata (EXIF, document properties, GPS, etc.).
+
+**What It Does:** Installs mat2 and exiftool, creates a `strip-metadata` command; removes EXIF, document metadata, camera info, timestamps. Both GUI (mat2) and CLI (exiftool) options.
+
+### 🏖️ Application Sandboxing
+
+**Problem Solved:** Applications could access your entire filesystem and data.
+
+**What It Does:** Installs and configures Firejail, creates isolated environments, uses `firecfg` for automatic sandboxing of common apps, restricts filesystem/device access, drops capabilities.
+
+### 🔒 System Hardening
+
+**Problem Solved:** Default Linux config prioritises usability over security.
+
+**What It Does:** Optionally disables Bluetooth, CUPS, Avahi (per-service confirmation), sets kernel parameters (ASLR, kptr_restrict, dmesg_restrict), hardens network (no redirects/source routing, SYN cookies, log martians), protects hardlinks/symlinks.
+
+### 📊 Privacy Auditing
+
+**Problem Solved:** People set privacy once and never check again.
+
+**What It Does:** Creates a `privacy-audit` command that reports firewall status, DNS config, listening services, browser profiles, Firejail status, and metadata tools. Use it regularly for health checks.
+
+---
+
+## Prerequisites
+
+**System requirements:** Linux (Ubuntu, Debian, Fedora, or Arch-based), non-root user with sudo, internet, ~100 MB disk.
+
+**Supported distributions:** Ubuntu 18.04+ and derivatives (Pop!_OS, Linux Mint), Debian 10+ and derivatives (**including Kali Linux**), Fedora 30+ and derivatives (CentOS Stream, Rocky), Arch and derivatives (Manjaro, EndeavourOS).
+
+**Before running:** The script makes system-level changes and will prompt before each step. Backups of `resolved.conf` and Firefox `user.js` are saved to `~/.privacy-toolkit-backups/`. Some changes may require a reboot.
+
+---
+
+## Installation
+
+1. **Get the files:** Clone the repo or download the script.
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/linux-privacy-setup-toolkit.git
+   cd linux-privacy-setup-toolkit
+   ```
+2. **Make executable:** `chmod +x privacy-toolkit.sh run-tests.sh`
+3. **Verify (recommended):** Open the script and check it; the script only uses package managers (apt/dnf/pacman), no raw curl/wget to external URLs.
+
+---
+
+## Usage
+
+**Basic:** `./privacy-toolkit.sh` — runs interactively and asks before each change.
+
+**Testing (recommended first):**
+
+- `./privacy-toolkit.sh --dry-run` — no system changes; writes generated scripts to a temp dir.
+- `./run-tests.sh` — syntax check, full dry-run, and generated-script checks.
+- `DRY_RUN_OUTPUT_DIR=/path/to/output ./privacy-toolkit.sh --dry-run` — custom output dir (e.g. CI).
+
+**What to expect:** Welcome → distro detection → dependency check (e.g. ufw, apparmor-utils) → step-by-step configuration with confirmations → summary and useful commands.
+
+**Sample flow:**
+
+```
 ╔════════════════════════════════════════╗
-║
-Privacy Setup Toolkit v1.1.0
+║     Privacy Setup Toolkit v1.1.0      ║
 ╚════════════════════════════════════════╝
-║
-This toolkit will help configure privacy and security
-settings on your Linux system. Each step will ask for
-your confirmation before making changes.
 Ready to begin privacy setup?
 Continue? [y/N]: y
-[2025-01-15 10:30:00] Detected distribution: ubuntu 22.04
-Checking dependencies...
+[2026-02-17 00:30:00] Detected distribution: ubuntu 22.04
 Missing dependencies: ufw apparmor-utils
-Install missing dependencies?
-Continue? [y/N]: y
+Install missing dependencies? Continue? [y/N]: y
 === Configuring UFW Firewall ===
-Configure UFW firewall with restrictive default rules?
+WARNING: This will RESET all existing UFW rules...
+Configure UFW firewall? (Existing rules will be replaced)
 Continue? [y/N]: y
 ✓ UFW firewall configured successfully
-=== Configuring Encrypted DNS ===
-Configure DNS over HTTPS (DoH) using systemd-resolved?Continue? [y/N]: y
-✓ Encrypted DNS configured successfully
 [... continues for each component ...]
-Detailed Feature Breakdown
-UFW Firewall Configuration
-Technical Details:
+## Detailed Feature Breakdown
+
+### UFW Firewall Configuration
+
+**Technical details:**
 # Default policies applied
 sudo ufw default deny incoming
 sudo ufw default allow outgoing# Block all incoming connections
@@ -190,15 +168,18 @@ Potential Issues:
 May block legitimate services you run locally
 Gaming or peer-to-peer applications might need additional rules
 Some development tools may require port exceptions
-DNS Encryption Configuration
-Technical Details: The toolkit configures /etc/systemd/resolved.conf :
+### DNS Encryption Configuration
+
+The toolkit configures `/etc/systemd/resolved.conf`:
 [Resolve]
 DNS=1.1.1.1#cloudflare-dns.com 8.8.8.8#dns.google
 DNSOverTLS=yes
 DNSSEC=yes
 FallbackDNS=1.0.0.1#cloudflare-dns.com 8.8.4.4#dns.google
 Cache=yes
-Domains=~.What This Protects Against:
+Domains=~.
+
+**What This Protects Against:**
 ISP monitoring of your web browsing through DNS logs
 DNS hijacking and redirection attacks
 Man-in-the-middle DNS manipulation
@@ -208,8 +189,9 @@ DNS queries are encrypted using TLS before leaving your system
 DNSSEC verifies the authenticity of DNS responses
 Multiple providers ensure redundancy and reliability
 Local caching improves performance while maintaining privacy
-Browser Privacy Hardening
-Key Privacy Settings Applied:
+### Browser Privacy Hardening
+
+**Key privacy settings applied:**
 // Disable tracking and fingerprinting
 user_pref("privacy.trackingprotection.enabled", true);
 user_pref("webgl.disabled", true);
@@ -230,7 +212,9 @@ WebRTC: IP address leakage
 Trade-offs:
 Some websites may not function correctly
 Media-rich content might have degraded performance
-Online services might request additional verificationMetadata Removal Tools
+Online services might request additional verification.
+
+**Metadata Removal Tools**
 What Gets Removed:
 EXIF data from images: Camera model, GPS coordinates, timestamps, camera settings
 Document metadata: Author names, creation/modification dates, revision history,
@@ -264,7 +248,7 @@ firejail --net=none libreoffice
 Security Features:
 Filesystem isolation: Applications can't access unauthorized directories
 Network filtering: Control which applications can access the internet
-Capability dropping: Remove dangerous system capabilities from processesResource limiting: Prevent applications from consuming excessive system resources
+Capability dropping: Remove dangerous system capabilities from processes. Resource limiting: Prevent applications from consuming excessive system resources
 Default Restrictions:
 No access to /boot , /lib , /usr directories
 Private /tmp directory
@@ -293,11 +277,19 @@ fs.protected_hardlinks = 1
 # Protect against symlink attacks
 fs.protected_symlinks = 1
 # Disable core dumps for SUID processes
-fs.suid_dumpable = 0Post-Setup Commands
-After running the toolkit, you'll have access to several new commands:
-Privacy Audit Command
-privacy-audit
-What it shows:
+fs.suid_dumpable = 0
+
+## Post-Setup Commands
+
+After running the toolkit you have:
+
+| Command | Description |
+|--------|-------------|
+| `privacy-audit` | Firewall, DNS, services, browser, sandbox, metadata tools status |
+| `strip-metadata <file>...` | Remove metadata from files |
+| `firejail <app>` | Run app in sandbox |
+
+**privacy-audit** shows:
 Current firewall status and rules
 DNS configuration and servers
 Active network services and listening ports
@@ -334,7 +326,7 @@ Firefox profiles found:
 Firejail installed: ✓
 Active sandbox processes:
 None currently running
-🗂️ Metadata Tools:mat2: ✓
+🗂️ Metadata Tools: mat2: ✓
 exiftool: ✓
 Metadata Stripping Command
 # Strip metadata from files
@@ -357,8 +349,9 @@ firejail --read-only=~ evince document.pdf
 # Private home directory
 # No network access
 # Read-only home directory
-Security Considerations
-What This Toolkit Can and Cannot Do
+## Security Considerations
+
+### What This Toolkit Can and Cannot Do
 ✅ What It Protects Against:
 Network-level surveillance and traffic analysis
 Basic browser fingerprinting and tracking
@@ -370,7 +363,7 @@ DNS monitoring and manipulation
 Advanced persistent threats (APTs) with zero-day exploits
 Physical access to your device
 Social engineering attacks
-Malware that exploits unknown vulnerabilitiesGovernment-level surveillance with legal access
+Malware that exploits unknown vulnerabilities. Government-level surveillance with legal access
 Your own poor security practices (weak passwords, etc.)
 Additional Security Recommendations
 Password Security:
@@ -403,7 +396,7 @@ Network-level surveillance by ISPs
 Local network attackers (coffee shop WiFi)
 Government surveillance
 Criminal hackers
-What are you protecting?Browsing habits and personal interests
+What are you protecting? Browsing habits and personal interests
 Personal files and documents
 Communication with others
 Financial and business information
@@ -414,10 +407,13 @@ Financial loss
 Professional damage
 Legal troubles
 Physical safety concerns
-Troubleshooting
-Common Issues and Solutions
-Firewall Blocks Legitimate Services
-Problem: UFW blocks a service you need (gaming, development server, etc.) Solution:
+## Troubleshooting
+
+### Common Issues and Solutions
+
+**Firewall blocks a service you need (gaming, dev server, etc.)**
+
+Solution:
 # Allow specific ports
 sudo ufw allow 8080
 sudo ufw allow from 192.168.1.0/24
@@ -429,57 +425,36 @@ sudo ufw allow out on tun0
 sudo ufw status numbered
 # Delete unwanted rules
 sudo ufw delete [number]
-DNS Resolution Issues
-Problem: Websites don't load or load very slowly Solution:
-# Check DNS status
-systemd-resolve --status
+**DNS resolution issues (sites don’t load or are slow)**
+
+Solution:
+# Check DNS status (use resolvectl on newer systems, systemd-resolve on older)
+resolvectl status
+# or: systemd-resolve --status
 # Flush DNS cache
-sudo systemd-resolve --flush-caches
+resolvectl flush-caches
+# or: sudo systemd-resolve --flush-caches
 # Test DNS resolution
 nslookup google.com
-dig google.com# Temporary fallback to regular DNS
+dig google.com
+# Temporary fallback to regular DNS
 sudo systemctl stop systemd-resolved
 echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
-Browser Compatibility Issues
-Problem: Websites break or don't function correctly Solution:
-1. Create a separate browser profile for problematic sites
-2. Temporarily disable strict privacy settings
-3. Use a different browser for specific tasks
-4. Whitelist specific sites in uBlock Origin or similar extensions
-Application Sandboxing Problems
-Problem: Sandboxed applications can't access needed files Solution:
-# Check sandbox status
-firejail --list
-# Create custom profile
-firejail --profile=custom_app --read-write=~/Documents app_name
-# Disable sandboxing for specific app
-sudo rm /usr/local/bin/app_name # Remove firejail symlink
-System Performance Issues
-Problem: System feels slower after applying hardening Solution:
-1. Check system resources: htop , iotop
-2. Review firewall logs: sudo ufw status verbose
-3. Monitor DNS resolution times: dig google.com
-4. Disable unnecessary hardening if needed
-Getting Help
-Log File Analysis
-Check the toolkit log file for errors:
-# Log files are created in /tmp/ with timestamp
-ls -la /tmp/privacy_toolkit_*.log# View the most recent log
-tail -f /tmp/privacy_toolkit_$(date +%Y%m%d)*.log
-System Status Commands
-# Check firewall
-sudo ufw status verbose
-# Check DNS
-systemd-resolve --status
-# Check running services
-systemctl list-units --type=service --state=running
-# Check network connections
-ss -tuln
-# Check sandboxed processes
-firejail --list
-Advanced Customization
-Customizing Firewall Rules
-Adding Application-Specific Rules:
+**Browser compatibility:** Separate profile, relax settings for some sites, or use another browser.
+
+**Application sandboxing problems:** Check status with `firejail --list`; use a custom profile with `--read-write=~/Documents` if needed; to disable sandboxing for an app, remove the firejail symlink (e.g. `sudo rm /usr/local/bin/app_name`).
+
+**System performance:** Check with `htop`/`iotop`, review `sudo ufw status verbose`; consider disabling some hardening if needed.
+
+**Log files:** `/tmp/privacy_toolkit_*.log` (or the path shown at end of dry-run). Useful commands: `sudo ufw status verbose`, `resolvectl status` or `systemd-resolve --status`, `ss -tuln`, `firejail --list`.
+
+---
+
+## Advanced Customization
+
+**Firewall:** Add rules for gaming (e.g. UDP 3478–3480, Steam), dev (3000, 8080), or local subnet.
+
+**Adding application-specific rules:**
 # Gaming applications
 sudo ufw allow out 3478:3480/udp
 sudo ufw allow out 7777:7784/tcp
@@ -531,7 +506,8 @@ include libreoffice.profile
 caps.drop all
 private-cache
 private-dev
-private-tmpread-only ${HOME}/Templates
+private-tmp
+read-only ${HOME}/Templates
 read-write ${HOME}/Documents
 EOF
 # Use custom profile
@@ -547,9 +523,9 @@ kernel.exec-shield = 1
 kernel.randomize_va_space = 2
 # Process restrictions
 kernel.yama.ptrace_scope = 1
-Frequently Asked Questions
-General Questions
-Q: Will this break my existing applications? A: The toolkit is designed to minimize
+## Frequently Asked Questions
+
+**Q: Will this break my existing applications?** A: The toolkit is designed to minimize
 breakage, but some applications may need adjustment. Each change asks for your
 permission, and you can skip components that might interfere with your workflow.
 Q: How much will this slow down my system? A: Performance impact is minimal. DNS
@@ -561,7 +537,7 @@ DNS: Edit /etc/systemd/resolved.conf
 Browser: Delete user.js files
 Sandboxing: sudo firecfg --clean
 System hardening: Remove files from /etc/sysctl.d/
-Technical QuestionsQ: Why not use a VPN instead? A: VPNs are useful but not sufficient alone. This toolkit
+**Q: Why not use a VPN instead?** A: VPNs are useful but not sufficient alone. This toolkit
 addresses system-level privacy issues that VPNs can't solve, like browser fingerprinting,
 metadata leakage, and local application security.
 Q: Is this better than using Tails or Qubes? A: Different tools for different needs:
@@ -591,19 +567,10 @@ Q: What if I can't connect to certain websites? A: Try these steps:
 Q: How do I know if everything is working correctly? A: Use the built-in audit command:
 privacy-audit
 This will show you the status of all privacy components.
-Q: What should I do if I suspect my privacy setup has been compromised? A:1. Run privacy-audit to check configuration integrity
+Q: What should I do if I suspect my privacy setup has been compromised? A: 1. Run privacy-audit to check configuration integrity
 2. Review firewall logs: sudo journalctl -u ufw
 3. Check for unexpected network connections: ss -tuln
 4. Consider running from a live USB if compromise is suspected
-Conclusion
-The Linux Privacy Setup Toolkit provides a solid foundation for digital privacy, but remember
-that privacy is an ongoing process, not a one-time setup. Regular audits, system updates,
-and staying informed about new privacy threats are essential for maintaining your digital
-security.
-This toolkit raises the bar for surveillance by implementing multiple layers of protection,
-making you a harder target while maintaining system usability. Combined with good security
-practices and awareness of your threat model, it provides a strong foundation for digital
-privacy on Linux.
-For the most current version of this documentation and the toolkit itself, check for updates
-regularly and consider contributing to the project if you find improvements or encounter
-issues.
+## Conclusion
+
+The Linux Privacy Setup Toolkit provides a solid foundation for digital privacy. Privacy is an ongoing process: run `privacy-audit` regularly, keep the system updated, and adapt to your threat model. For the latest version and to contribute, see the project repository on GitHub.
