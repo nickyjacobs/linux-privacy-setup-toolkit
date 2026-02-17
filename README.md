@@ -440,6 +440,13 @@ dig google.com
 # Temporary fallback to regular DNS
 sudo systemctl stop systemd-resolved
 echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+
+**systemd-resolved not found (e.g. on Kali Linux)**
+
+If you see "systemd-resolved is not installed or not used", Kali often uses NetworkManager instead. The script writes `/etc/systemd/resolved.conf` for future use, but for encrypted DNS now:
+
+- **NetworkManager:** Edit connection → IPv4/IPv6 → DNS: `1.1.1.1, 8.8.8.8` (or use DoH-capable DNS)
+- **Firefox:** Settings → Privacy & Security → Enable "DNS over HTTPS" and choose a provider (Cloudflare, etc.)
 **Browser compatibility:** Separate profile, relax settings for some sites, or use another browser.
 
 **Application sandboxing problems:** Check status with `firejail --list`; use a custom profile with `--read-write=~/Documents` if needed; to disable sandboxing for an app, remove the firejail symlink (e.g. `sudo rm /usr/local/bin/app_name`).

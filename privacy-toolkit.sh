@@ -123,7 +123,7 @@ install_dependencies() {
         return
     fi
     case $DISTRO in
-        ubuntu|debian)
+        ubuntu|debian|kali)
             sudo apt update
             sudo apt install -y "${deps[@]}"
             ;;
@@ -201,7 +201,8 @@ configure_dns() {
         log_message "Backed up /etc/systemd/resolved.conf to $BACKUP_DIR"
     fi
     
-    # Create systemd-resolved configuration
+    # Create systemd-resolved configuration (also created if service not present, for future use)
+    sudo mkdir -p /etc/systemd
     sudo tee /etc/systemd/resolved.conf > /dev/null <<EOF
 [Resolve]
 DNS=1.1.1.1#cloudflare-dns.com 8.8.8.8#dns.google
@@ -212,15 +213,18 @@ Cache=yes
 Domains=~.
 EOF
     
-    sudo systemctl restart systemd-resolved
-    
-    # Use stub resolv only if systemd-resolved is managing resolv.conf (common on systemd systems)
-    if [ -d /run/systemd/resolve ]; then
-        sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-        print_color "$CYAN" "Note: If you use NetworkManager, it may overwrite /etc/resolv.conf. DoH is still active in systemd-resolved."
+    if sudo systemctl restart systemd-resolved 2>/dev/null; then
+        if [ -d /run/systemd/resolve ]; then
+            sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+            print_color "$CYAN" "Note: If you use NetworkManager, it may overwrite /etc/resolv.conf."
+        fi
+        print_color "$GREEN" "✓ Encrypted DNS configured successfully (systemd-resolved)"
+    else
+        print_color "$YELLOW" "systemd-resolved is not installed or not used on this system (e.g. Kali often uses NetworkManager only)."
+        print_color "$CYAN" "Config written to /etc/systemd/resolved.conf for when you use systemd-resolved."
+        print_color "$CYAN" "For encrypted DNS now: set DNS to 1.1.1.1 or 8.8.8.8 in NetworkManager (connection → IPv4/IPv6 → DNS), or use DoH in Firefox settings."
+        print_color "$GREEN" "✓ DNS config file written; use NetworkManager or browser DoH for encryption on this system"
     fi
-    
-    print_color "$GREEN" "✓ Encrypted DNS configured successfully"
 }
 
 # Function to install and configure browser security
@@ -240,7 +244,7 @@ configure_browser() {
     
     # Install Firefox if not present
     case $DISTRO in
-        ubuntu|debian)
+        ubuntu|debian|kali)
             sudo apt install -y firefox
             ;;
         fedora)
@@ -314,17 +318,22 @@ configure_metadata_removal() {
     fi
     
     if [[ -z "${DRY_RUN:-}" ]]; then
-    case $DISTRO in
-        ubuntu|debian)
-            sudo apt install -y exiftool mat2
-            ;;
-        fedora)
-            sudo dnf install -y perl-Image-ExifTool mat2
-            ;;
-        arch|manjaro)
-            sudo pacman -S --noconfirm exiftool mat2
-            ;;
-    esac
+        case $DISTRO in
+            ubuntu|debian|kali)
+                sudo apt install -y exiftool mat2 2>/dev/null || {
+                    print_color "$YELLOW" "apt install failed. Trying exiftool only..."
+                    sudo apt install -y exiftool 2>/dev/null || true
+                    print_color "$YELLOW" "Install manually later: sudo apt install -y exiftool mat2"
+                    true
+                }
+                ;;
+            fedora)
+                sudo dnf install -y perl-Image-ExifTool mat2 2>/dev/null || true
+                ;;
+            arch|manjaro)
+                sudo pacman -S --noconfirm exiftool mat2 2>/dev/null || true
+                ;;
+        esac
     fi
     
     # Create convenience script (in dry-run uses BIN_DIR from main)
@@ -377,7 +386,7 @@ configure_sandboxing() {
     fi
     
     case $DISTRO in
-        ubuntu|debian)
+        ubuntu|debian|kali)
             sudo apt install -y firejail firejail-profiles
             ;;
         fedora)
